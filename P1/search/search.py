@@ -89,7 +89,6 @@ def genericGraphSearch(problem, fringe):
     visited = set()
 
     while not fringe.isEmpty():
-        
         node = fringe.pop()
         if problem.isGoalState(node.state):
             return node.path
@@ -128,7 +127,9 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    
+    g = lambda node: node.cost
+    pqwf = util.PriorityQueueWithFunction(g)
+    return genericGraphSearch(problem,pqwf)
 
 def nullHeuristic(state, problem=None):
     """
@@ -148,3 +149,4 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+
