@@ -61,6 +61,15 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+class Node:
+    def __init__(self, successor, previous):
+        self.state, action, cost = successor
+        if previous is not None:
+            self.path = previous.path + [action]
+            self.cost = previous.cost + cost
+        else:
+            self.path = []
+            self.cost = cost
 
 def tinyMazeSearch(problem):
     """
@@ -72,6 +81,28 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+def genericGraphSearch(problem, fringe):
+
+    initialState = problem.getStartState()
+    root = (initialState, None, 0)
+    fringe.push(Node(root,None))
+    visited = set()
+
+    while not fringe.isEmpty():
+        
+        node = fringe.pop()
+        if problem.isGoalState(node.state):
+            return node.path
+        if node.state not in visited:
+            visited.add(node.state)
+            for successor in problem.getSuccessors(node.state):
+                fringe.push(Node(successor,node))
+    return None
+
+
+
+        
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -81,23 +112,23 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
     print "Start:", problem.getStartState()
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    stack = util.Stack()
+    return genericGraphSearch(problem,stack)
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.Queue()
+    return genericGraphSearch(problem,queue)
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
 
 def nullHeuristic(state, problem=None):
     """
