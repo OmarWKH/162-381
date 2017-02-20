@@ -62,14 +62,21 @@ class SearchProblem:
         util.raiseNotDefined()
 
 class Node:
+    """
+    Used in search and relies on SearchProblem. Takes:
+    - successor: Tuple (state, action, cost).
+    - previous: Parent Node. None if this is the starting state.
+
+    Has:
+    - state: Anything depending on the problem.
+    - path: List of actions leading to this state.
+    - cost: Cumulative cost from start to current state.
+    """
     def __init__(self, successor, previous):
+        notRoot = previous is not None
         self.state, action, cost = successor
-        if previous is not None:
-            self.path = previous.path + [action]
-            self.cost = previous.cost + cost
-        else:
-            self.path = []
-            self.cost = cost
+        self.path = previous.path + [action] if notRoot else []
+        self.cost = previous.cost + cost if notRoot else cost
 
 def tinyMazeSearch(problem):
     """
@@ -82,10 +89,13 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def genericGraphSearch(problem, fringe):
-
-    initialState = problem.getStartState()
-    root = (initialState, None, 0)
-    fringe.push(Node(root,None))
+    """
+    Takes a fringe that defines the strategy of node expansion.
+    Relies on Node and SearchProblem.
+    """
+    startState = problem.getStartState()
+    asSuccessor = (startState, None, 0)
+    fringe.push(Node(asSuccessor, None))
     visited = set()
 
     while not fringe.isEmpty():
@@ -97,10 +107,6 @@ def genericGraphSearch(problem, fringe):
             for successor in problem.getSuccessors(node.state):
                 fringe.push(Node(successor,node))
     return None
-
-
-
-        
 
 def depthFirstSearch(problem):
     """
@@ -117,19 +123,19 @@ def depthFirstSearch(problem):
     
     """
     stack = util.Stack()
-    return genericGraphSearch(problem,stack)
+    return genericGraphSearch(problem, stack)
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     queue = util.Queue()
-    return genericGraphSearch(problem,queue)
+    return genericGraphSearch(problem, queue)
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     g = lambda node: node.cost
     pqwf = util.PriorityQueueWithFunction(g)
-    return genericGraphSearch(problem,pqwf)
+    return genericGraphSearch(problem, pqwf)
 
 def nullHeuristic(state, problem=None):
     """
@@ -149,4 +155,3 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
-
