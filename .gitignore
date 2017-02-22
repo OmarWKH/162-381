@@ -1,4 +1,10 @@
 *.zip
+
 *.sublime-workspace
 *.sublime-project
+
+__pycache__/
 *.pyc
+
+.DS_Store
+_MACOSX/
