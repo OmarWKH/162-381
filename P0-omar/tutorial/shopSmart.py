@@ -28,8 +28,11 @@ def shopSmart(orderList, fruitShops):
         orderList: List of (fruit, numPound) tuples
         fruitShops: List of FruitShops
     """
-    prices = {shop: shop.getPriceOfOrder(orderList) for shop in fruitShops}
-    bestShop = min(prices, key=prices.get)
+
+    # dictionary of each shop as key and its price as value
+    shopPricesDict = {shop: shop.getPriceOfOrder(orderList) for shop in fruitShops}
+    # minimum key in dictionary based on value (using dict.get function)
+    bestShop = min(shopPricesDict, key=shopPricesDict.get)
     return bestShop
 
 if __name__ == '__main__':
