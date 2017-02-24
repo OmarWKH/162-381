@@ -266,7 +266,7 @@ def euclideanHeuristic(position, problem, info={}):
 # This portion is incomplete.  Time to write code!  #
 #####################################################
 
-def removeFromTuple(element, aTuple):
+def _removeFromTuple(element, aTuple):
     remaining = set()
     for existing in aTuple:
         if element != existing:
@@ -301,7 +301,7 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        corners = removeFromTuple(self.startingPosition, self.corners)
+        corners = _removeFromTuple(self.startingPosition, self.corners)
         return (self.startingPosition, corners)
 
     def isGoalState(self, state):
@@ -336,10 +336,9 @@ class CornersProblem(search.SearchProblem):
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
                 nextPosition = (nextx, nexty)
-                nextCorners = removeFromTuple(nextPosition, state[1])
+                nextCorners = _removeFromTuple(nextPosition, state[1])
                 nextState = (nextPosition, nextCorners)
                 successors.append((nextState, action, 1))
-
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
