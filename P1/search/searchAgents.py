@@ -502,8 +502,46 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    # Tried
+        # remaining food
+        # MD (furthers)
+        # 1/num_legal moves
+        # distance between 2 pallets (closets, furthers)
+    # Untried
+        # food pallets in section
+    foodXY = foodGrid.asList()
+    if len(foodXY) == 0:
+        return 0
+    distances = {food: util.manhattanDistance(food, position) for food in foodXY}
+    max_point = max(distances, key=distances.get)
+    mdist_max_food = distances[max_point] # 9551
+
+    # num_food_on_axis = 0
+    # for food in foodXY:
+    #     if food[0] == position[0] or food[1] == position[1]:
+    #         num_food_on_axis += 1
+    # h_food_no_axis = len(foodXY) - num_food_on_axis
+
+    # if len(foodXY) == 1:
+    #     return distances.values()[0]
+    # h_d2 = sorted(distances.values(), reverse=True)[-1] - sorted(distances.values(), reverse=True)[0]
+
+    # num_food = len(foodXY) # 12517
+
+    # num_legal = 4
+    # x,y = position
+    # for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+    #     dx, dy = Actions.directionToVector(action)
+    #     nextx, nexty = int(x + dx), int(y + dy)
+    #     hitsWall = problem.walls[nextx][nexty]
+    #     if hitsWall:
+    #         num_legal -= 1
+
+    # h_num_legal = 10.0/num_legal # 16000
+
+    h = mdist_max_food
+    
+    return h
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
