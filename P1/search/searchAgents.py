@@ -267,6 +267,9 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 
 def _removeFromTuple(element, aTuple):
+    """
+    Given an element x and a tuple, copies all elements except x to a new tuple via a set
+    """
     remaining = set()
     for existing in aTuple:
         if element != existing:
