@@ -377,12 +377,12 @@ def cornersHeuristic(state, problem):
 
     pacman = state[0]
     unvisitedCorners = state[1]
+    
     if len(unvisitedCorners) == 0:
         return 0
 
-    distanceToCorners = {corner: util.manhattanDistance(corner, pacman) for corner in unvisitedCorners}
-    furthestCorner = max(distanceToCorners, key=distanceToCorners.get)
-    furthestDistance = distanceToCorners[furthestCorner]
+    distanceToCorners = [util.manhattanDistance(corner, pacman) for corner in unvisitedCorners]
+    furthestDistance = max(distanceToCorners)
 
     """
     Previously tried code:
