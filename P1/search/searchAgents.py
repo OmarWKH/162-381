@@ -356,7 +356,6 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
-
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -373,43 +372,45 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
     pacman = state[0]
-    unvisited = state[1]
-    if len(unvisited) == 0:
+    unvisitedCorners = state[1]
+    if len(unvisitedCorners) == 0:
         return 0
-    #distances = {corner: util.manhattanDistance(corner, pacman) for corner in unvisited}
-    #min_corner = min(distances, key=distances.get)
-    #dist_min_corner = distances[min_corner] # 1475
-    # edist_min_corner = dist_min_point(pacman, unvisited, euclideanDistance) # 1532
-    distances = {corner: util.manhattanDistance(corner, pacman) for corner in unvisited}
-    max_point = max(distances, key=distances.get)
-    mdist_max_corner = distances[max_point] # 1136
 
-    # max_w = 1
-    # w = 0.25
-    # d_h = 0
-    # ds = distances.values()
-    # for d in ds:
-    #     d_h += (max_w - w)*d
-    #     w += w
+    distanceToCorners = {corner: util.manhattanDistance(corner, pacman) for corner in unvisited}
+    furthestCorner = max(distanceToCorners, key=distanceToCorners.get)
+    furthestDisance = distanceToCorners[furthestCorner]
 
-    # num_unvisited = len(unvisited) # 1908
+    """
+    Previously tried code:
+        distances = {corner: util.manhattanDistance(corner, pacman) for corner in unvisited}
+        min_corner = min(distances, key=distances.get)
+        dist_min_corner = distances[min_corner] # 1475
+        edist_min_corner = dist_min_point(pacman, unvisited, euclideanDistance) # 1532
 
-    # num_walls = 0
-    # for corner in unvisited:
-    #    minx = min(corner[0], pacman[0])
-    #    miny = min(corner[1], pacman[1])
-    #    maxx = max(corner[0], pacman[0])
-    #    maxy = max(corner[1], pacman[1])
+        max_w = 1
+        w = 0.25
+        d_h = 0
+        ds = distances.values()
+        for d in ds:
+            d_h += (max_w - w)*d
+            w += w
 
-    #    for x in range(minx, maxx):
-    #        for y in range(miny, maxy):
-    #             num_walls += 1 if walls[x][y] else 0
-    
-    h = mdist_max_corner
+        num_unvisited = len(unvisited) # 1908
 
-    return h
+        num_walls = 0
+        for corner in unvisited:
+           minx = min(corner[0], pacman[0])
+           miny = min(corner[1], pacman[1])
+           maxx = max(corner[0], pacman[0])
+           maxy = max(corner[1], pacman[1])
+
+           for x in range(minx, maxx):
+               for y in range(miny, maxy):
+                    num_walls += 1 if walls[x][y] else 0
+    """
+
+    return furthestDisance
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -502,46 +503,52 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    # Tried
-        # remaining food
-        # MD (furthers)
-        # 1/num_legal moves
-        # distance between 2 pallets (closets, furthers)
-    # Untried
-        # food pallets in section
-    foodXY = foodGrid.asList()
-    if len(foodXY) == 0:
+
+    """
+    Tried
+        remaining food
+        MD (furthest)
+        1/num_legal moves
+        distance between 2 pallets (closets, furthest)
+    Untried
+        food pallets in section
+    """
+
+    foodPositions = foodGrid.asList()
+    if len(foodPositions) == 0:
         return 0
-    distances = {food: util.manhattanDistance(food, position) for food in foodXY}
-    max_point = max(distances, key=distances.get)
-    mdist_max_food = distances[max_point] # 9551
 
-    # num_food_on_axis = 0
-    # for food in foodXY:
-    #     if food[0] == position[0] or food[1] == position[1]:
-    #         num_food_on_axis += 1
-    # h_food_no_axis = len(foodXY) - num_food_on_axis
+    distanceToFood = {food: util.manhattanDistance(food, position) for food in foodPositions}
+    furthestFood = max(distanceToFood, key=distanceToFood.get)
+    furthestDisance = distances[furthestFood] # 9551
 
-    # if len(foodXY) == 1:
-    #     return distances.values()[0]
-    # h_d2 = sorted(distances.values(), reverse=True)[-1] - sorted(distances.values(), reverse=True)[0]
+    """
+    Previously tried code:
+        num_food_on_axis = 0
+        for food in foodXY:
+            if food[0] == position[0] or food[1] == position[1]:
+                num_food_on_axis += 1
+        h_food_no_axis = len(foodXY) - num_food_on_axis
 
-    # num_food = len(foodXY) # 12517
+        if len(foodXY) == 1:
+            return distances.values()[0]
+        h_d2 = sorted(distances.values(), reverse=True)[-1] - sorted(distances.values(), reverse=True)[0]
 
-    # num_legal = 4
-    # x,y = position
-    # for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-    #     dx, dy = Actions.directionToVector(action)
-    #     nextx, nexty = int(x + dx), int(y + dy)
-    #     hitsWall = problem.walls[nextx][nexty]
-    #     if hitsWall:
-    #         num_legal -= 1
+        num_food = len(foodXY) # 12517
 
-    # h_num_legal = 10.0/num_legal # 16000
+        num_legal = 4
+        x,y = position
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = problem.walls[nextx][nexty]
+            if hitsWall:
+                num_legal -= 1
 
-    h = mdist_max_food
+        h_num_legal = 10.0/num_legal # 16000
+    """
     
-    return h
+    return furthestDisance
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
