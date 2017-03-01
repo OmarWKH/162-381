@@ -1,4 +1,44 @@
 def foodHeuristic(state, problem):
+    # max_distance(pacman, food) optimized
+    gameState = problem.startingGameState
+    foodList = foodGrid.asList()
+    info = problem.heuristicInfo
+    if info.get('distances') is None:
+        info['distances'] = dict()
+        for a in range(0, len(foodList)):
+            for b in range(a, len(foodList)):
+                foodA = foodList[a]
+                foodB = foodList[b]
+                pair = frozenset([foodA, foodB])
+                info['distances'][pair] = mazeDistance(foodA, foodB, gameState)
+    maxDistanceToFood = 0
+    if position in foodList:
+        for food in foodList:
+            pair = frozenset([position, food])
+            maxDistanceToFood = max(maxDistanceToFood, info['distances'][pair])
+    else:
+        distancesToFood = {food: mazeDistance(position, food, gameState) for food in foodGrid.asList()}
+        furthestFood = max(distancesToFood, key=distancesToFood.get)
+        pair = frozenset([position, furthestFood])
+        maxDistanceToFood = distancesToFood[furthestFood]
+        info['distances'][pair] = maxDistanceToFood
+    return maxDistanceToFood
+
+    # avrg_all_distance(pacman, food)
+    gameState = problem.startingGameState
+    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
+    return sum(distanceToFood) / len(distanceToFood) # 8396
+
+    # max_distance(pacman, food)
+    gameState = problem.startingGameState
+    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
+    return max(distanceToFood) # 4137
+
+    # min_distance(pacman, food)
+    gameState = problem.startingGameState
+    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
+    return min(distanceToFood) # 12372
+
     """
     Tried
         remaining food
@@ -134,3 +174,12 @@ def foodHeuristic(state, problem):
     # h = furthestDistance
     
     return h
+
+def mazeDistanceAStar(point1, point2, gameState, heuristic):
+    x1, y1 = point1
+    x2, y2 = point2
+    walls = gameState.getWalls()
+    assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
+    assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
+    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+    return len(search.astar(prob, heuristic))

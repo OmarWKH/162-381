@@ -61,6 +61,16 @@ class SearchProblem:
         """
         util.raiseNotDefined()
 
+def tinyMazeSearch(problem):
+    """
+    Returns a sequence of moves that solves tinyMaze.  For any other maze, the
+    sequence of moves will be incorrect, so only use this for tinyMaze.
+    """
+    from game import Directions
+    s = Directions.SOUTH
+    w = Directions.WEST
+    return  [s, s, w, s, w, w, s, w]
+
 class Node:
     """
     Used in search and relies on SearchProblem. Takes:
@@ -77,16 +87,6 @@ class Node:
         self.state, action, cost = successor
         self.path = previous.path + [action] if notRoot else []
         self.cost = previous.cost + cost if notRoot else cost
-
-def tinyMazeSearch(problem):
-    """
-    Returns a sequence of moves that solves tinyMaze.  For any other maze, the
-    sequence of moves will be incorrect, so only use this for tinyMaze.
-    """
-    from game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
 
 def genericGraphSearch(problem, fringe):
     """

@@ -481,30 +481,11 @@ def foodHeuristic(state, problem):
     if len(foodGrid.asList()) == 0:
         return 0
 
-    # max_distance(pacman, food) with manhatten then maze
+    # max_distance(pacman, food) with manhattanDistance then mazeDistance
     gameState = problem.startingGameState
     distanceToFood = {foodPoint: util.manhattanDistance(position, foodPoint) for foodPoint in foodGrid.asList()}
     furthestFood = max(distanceToFood, key=distanceToFood.get)
-    return mazeDistance(position, furthestFood, gameState) # 5352
-
-    # avrg_all_distance(pacman, food)
-    gameState = problem.startingGameState
-    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
-    return sum(distanceToFood) / len(distanceToFood) # 8396
-
-    # max_distance(pacman, food)
-    gameState = problem.startingGameState
-    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
-    return max(distanceToFood) # 4137
-
-    # min_distance(pacman, food)
-    gameState = problem.startingGameState
-    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
-    return min(distanceToFood) # 12372
-
-def _getNineNeighbors(point):
-    x, y = point
-    return ((x+1, y), (x-1, y), (x, y+1), (x, y-1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1))
+    return mazeDistance(position, furthestFood, gameState)
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
