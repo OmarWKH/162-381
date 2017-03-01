@@ -507,105 +507,15 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
 
-    """
-    Tried
-        remaining food
-        MD (furthest)
-        1/num_legal moves
-        distance between 2 pallets (closets, furthest)
-    Untried
-        food pallets in section
-    """
-    md = util.manhattanDistance
+    # min_distance(pacman, food)
+    gameState = problem.startingGameState
+    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
+    return max(distanceToFood) # 4137
 
-    foodPositions = foodGrid.asList()
-    if len(foodPositions) == 0:
-        return 0
-    
-    # h = 1.0 / len(foodPositions)
-
-    # empty = 0
-    # dot = 0
-    # wall = 0
-    # for neighbor in _getNineNeighbors(position):
-    #     if neighbor in foodPositions:
-    #         dot += 1
-    #     elif problem.walls[neighbor[0]][neighbor[1]]:
-    #         wall += 1
-    #     else:
-    #         empty += 1
-    # h = empty - dot - wall
-
-
-    # if problem.heuristicInfo.get('lastFood') is None:
-    #     problem.heuristicInfo['lastFood'] = position
-    # elif position in foodGrid.asList():
-    #     problem.heuristicInfo['lastFood'] = position
-    # lastFood = problem.heuristicInfo['lastFood']
-    # distancesToLastFood = {food: md(food, lastFood) for food in foodPositions}
-    # closestFood = min(distancesToLastFood, key=distancesToLastFood.get)
-    # closestDistance = distancesToLastFood[closestFood]
-    
-    # h = max(closestDistance, md(position, closestFood))
-    # /2
-    # difference
-    # max
-    # withPacman = closestDistance + util.manhattanDistance(closestFood, position) # not admissable
-    # if problem.heuristicInfo.get('positions') is None:
-    #     problem.heuristicInfo['positions'] = set(position)
-    # else:
-    #     problem.heuristicInfo['positions'].add(position)
-    # visitedPositions = problem.heuristicInfo['positions']
-    # cost = 2 if position in visitedPositions else 0
-
-    distanceToFood = {food: md(food, position) for food in foodPositions}
-    # furthestFood = max(distanceToFood, key=distanceToFood.get)
-    # furthestDistance = distanceToFood[furthestFood] # 9551
-    # h = furthestDistance * cost
-    distances = sorted(distanceToFood.values())
-    # h = sum(distanceToFood.values())
-    if len(distances) > 1:
-        h = distances[0] + distances[1]
-    else:
-        h = distances[0]
-    # h = sum(distanceToFood.values())/len(distanceToFood) # 11632
-    
-    # distanceToPrevious = md(position, lastFood)
-    # distanceToNext = furthestDistance
-    # h = 2 * distanceToPrevious + furthestDistance # 10757
-    #h = max(distanceToPrevious, furthestDistance)
-
-    """
-    Previously tried code:
-        num_food_on_axis = 0
-        for food in foodXY:
-            if food[0] == position[0] or food[1] == position[1]:
-                num_food_on_axis += 1
-        h_food_no_axis = len(foodXY) - num_food_on_axis
-
-        if len(foodXY) == 1:
-            return distances.values()[0]
-        h_d2 = sorted(distances.values(), reverse=True)[-1] - sorted(distances.values(), reverse=True)[0]
-
-        num_food = len(foodXY) # 12517
-
-        num_legal = 4
-        x,y = position
-        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            hitsWall = problem.walls[nextx][nexty]
-            if hitsWall:
-                num_legal -= 1
-
-        h_num_legal = 10.0/num_legal # 16000
-    """
-    # distanceToFood = {food: mazeDistance(food, position, problem.startingGameState) for food in foodPositions}
-    # furthestFood = max(distanceToFood, key=distanceToFood.get)
-    # furthestDistance = distanceToFood[furthestFood] # 9551
-    # h = furthestDistance
-    
-    return h
+    # min_distance(pacman, food)
+    gameState = problem.startingGameState
+    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
+    return min(distanceToFood) # 12372
 
 def _getNineNeighbors(point):
     x, y = point
