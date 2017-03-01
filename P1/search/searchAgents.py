@@ -510,12 +510,18 @@ def foodHeuristic(state, problem):
     if len(foodGrid.asList()) == 0:
         return 0
 
+    # max_distance(pacman, food) with manhatten then maze
+    gameState = problem.startingGameState
+    distanceToFood = {foodPoint: util.manhattanDistance(position, foodPoint) for foodPoint in foodGrid.asList()}
+    furthestFood = max(distanceToFood, key=distanceToFood.get)
+    return mazeDistance(position, furthestFood, gameState) # 5352
+
     # avrg_all_distance(pacman, food)
     gameState = problem.startingGameState
     distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
     return sum(distanceToFood) / len(distanceToFood) # 8396
 
-    # min_distance(pacman, food)
+    # max_distance(pacman, food)
     gameState = problem.startingGameState
     distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
     return max(distanceToFood) # 4137
