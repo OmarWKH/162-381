@@ -507,6 +507,14 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
 
+    if len(foodGrid.asList()) == 0:
+        return 0
+
+    # avrg_all_distance(pacman, food)
+    gameState = problem.startingGameState
+    distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
+    return sum(distanceToFood) / len(distanceToFood) # 8396
+
     # min_distance(pacman, food)
     gameState = problem.startingGameState
     distanceToFood = [mazeDistance(position, foodPoint, gameState) for foodPoint in foodGrid.asList()]
