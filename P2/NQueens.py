@@ -1,9 +1,48 @@
+'''
+* = selected
+
+Formulation:
+    1- Tuples
+    2- Grid
+    3*- List with column/row as index
+getRandomAssignment:
+    1*- list
+    2- ordered list
+mutate:
+    var: random (!)
+    1- min_conflict(var)
+    2- overall fitness
+solve:
+    1*- iterative
+    2- recursive
+    ..
+    change if:
+    1- better
+    2- better or equal
+getFitness:
+    1- # of conflicts
+    2- # of 0-conflict queens
+    3- weights
+    4- weights: diagonal, row, column
+display:
+    1- diff-conflict(var)
+    2- # 0-conflict queens
+    3- total # conflicts
+Parallel:
+    1- solve multiple, return earliest
+    2- queen conflicts for loop
+No solution/stuck:
+    1- n-times
+    2- time limit
+    3- simulated ann..
+    4- modify fitness
+'''
+
 import random
 import unittest
 from datetime import datetime
 
 def getRandomAssignment(n):
-    random.seed()
     '''
     col == index
     row = queens[col]
@@ -17,8 +56,17 @@ def getFitness(queens):
 def mutate(configuration):
     pass
     
-def solve(initial, startTime):
-    display(initial.queens, startTime)
+def minConflict(queen, queens):
+    pass
+
+def solve(n):
+    startTime = datetime.now()
+    random.seed()
+
+    initialQueens = getRandomAssignment(n)
+    initial = Configuration(initialQueens, getFitness(initialQueens))
+
+    display(initial, startTime)
     '''
     while not solved:
         child <- mutate
@@ -27,8 +75,10 @@ def solve(initial, startTime):
     '''
     return initial
 
-def display(queens, time):
+def display(configuration, time):
     timeDiff = datetime.now() - time
+
+    queens = configuration.queens
     queens_range = range(0, len(queens))
     board = ''
     for row in queens_range:
@@ -37,8 +87,10 @@ def display(queens, time):
             board += '|'
             board += 'Q' if rowQ == row else '.'
         board += '|\n'
+
     print board
     print timeDiff
+    print configuration.fitness
 
 class Configuration:
     def __init__(self, queens, fitness):
@@ -46,19 +98,19 @@ class Configuration:
         self.fitness = fitness
 
 class Test(unittest.TestCase):
-    def test_8_queens(self):
+    def test_8(self):
         self.nQueens(8)
 
+    def test_b(self):
+        benchmark(self.nQueens(8))
+
     def nQueens(self, n):
-        startTime = datetime.now()
-        initialQueens = getRandomAssignment(n)
-        initial = Configuration(initialQueens, getFitness(initialQueens))
         optimalFitness = 0
-        solution = solve(initial, startTime)
+        solution = solve(n)
         
         self.assertEqual(optimalFitness, solution.fitness)
 
-def benchmark():
+def benchmark(function):
     pass
 
 if __name__ == '__main__':
