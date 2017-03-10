@@ -41,6 +41,7 @@ No solution/stuck:
 import random
 import unittest
 from datetime import datetime
+import sys
 
 def getRandomAssignment(n):
     '''
@@ -59,14 +60,15 @@ def mutate(configuration):
 def minConflict(queen, queens):
     pass
 
-def solve(n):
+def solve(n, doDisplay):
     startTime = datetime.now()
     random.seed()
 
     initialQueens = getRandomAssignment(n)
     initial = Configuration(initialQueens, getFitness(initialQueens))
 
-    display(initial, startTime)
+    if doDisplay:
+        display(initial, startTime)
     '''
     while not solved:
         child <- mutate
@@ -99,19 +101,26 @@ class Configuration:
 
 class Test(unittest.TestCase):
     def test_8(self):
-        self.nQueens(8)
+        self.nQueens(8, True)
 
     def test_b(self):
-        benchmark(self.nQueens(8))
+        benchmark(lambda: self.nQueens(8, False), 1000)
 
-    def nQueens(self, n):
+    def nQueens(self, n, doDisplay):
         optimalFitness = 0
-        solution = solve(n)
+        solution = solve(n, doDisplay)
         
         self.assertEqual(optimalFitness, solution.fitness)
 
-def benchmark(function):
-    pass
+def benchmark(function, times=100):
+    averageTime = 0
+    for i in range(1, times+1):
+        startTime = datetime.now()
+        function()
+        timeDiff = (datetime.now() - startTime).total_seconds()
+        averageTime = ((i-1) * averageTime + timeDiff) / i # iterative average computation
+        if i < 10 or i % 10 == 0:
+            print '{0}\t{1}'.format(i, averageTime)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(argv=sys.argv)
