@@ -1,6 +1,11 @@
 '''
 * = selected
 
+some enhance points:
+    1- fitness
+    2- minconflict
+    3- changing current/child
+
 Formulation:
     1- Tuples
     2- Grid
@@ -28,6 +33,10 @@ display:
     1- diff-conflict(var)
     2- # 0-conflict queens
     3- total # conflicts
+benchmark:
+    disable display by:
+    1*- toggle boolean
+    2- redirect output (stdout) to no where instead of comman line
 Parallel:
     1- solve multiple, return earliest
     2- queen conflicts for loop
@@ -54,29 +63,29 @@ def getRandomAssignment(n):
 def getFitness(queens):
     return 0
 
-def mutate(configuration):
+def mutate(queens):
     pass
     
-def minConflict(queen, queens):
+def minConflictValue(queenColumn, queens):
     pass
 
-def solve(n, doDisplay):
+def solve(n, doDisplay, initial=None):
     startTime = datetime.now()
     random.seed()
 
-    initialQueens = getRandomAssignment(n)
-    initial = Configuration(initialQueens, getFitness(initialQueens))
+    initialQueens = initial or getRandomAssignment(n)
+    current = Configuration(initialQueens)
 
     if doDisplay:
-        display(initial, startTime)
+        display(current, startTime)
     '''
     while not solved:
         child <- mutate
         if better(child.fitness, parent.fitness): change, display(initialQueens, startTime)
     return solution
     '''
-    return initial
-
+    return current
+    
 def display(configuration, time):
     timeDiff = datetime.now() - time
 
@@ -90,21 +99,48 @@ def display(configuration, time):
             board += 'Q' if rowQ == row else '.'
         board += '|\n'
 
+    print timeDiff, configuration.fitness
+    print queens
     print board
-    print timeDiff
-    print configuration.fitness
 
 class Configuration:
-    def __init__(self, queens, fitness):
+    def __init__(self, queens):
         self.queens = queens
-        self.fitness = fitness
+        self.fitness = getFitness(queens)
 
 class Test(unittest.TestCase):
+    def test_4(self):
+        self.nQueens(4, True)
+
     def test_8(self):
         self.nQueens(8, True)
 
-    def test_b(self):
-        benchmark(lambda: self.nQueens(8, False), 1000)
+    def b(self, n):
+        benchmark(lambda: self.nQueens(n, False), 1000)
+
+    def test_b10(self):
+        self.b(10)
+
+    def test_b100(self):
+        self.b(100)
+
+    def test_b1000(self):
+        self.b(1000)
+
+    def test_b10000(self):
+        self.b(10000)
+
+    def test_fitness(self):
+        queens = Configuration([2, 0, 3, 1])
+        display(queens, datetime.now())
+        self.assertEqual(0, queens.fitness)
+
+    def test_minconflict(self):
+        queens = [3, 0, 1, 3]
+        possibleAnswers = [1, 2, 3]
+        answer = minConflictValue(3, queens)
+        print answer
+        self.assertTrue(answer in possibleAnswers)
 
     def nQueens(self, n, doDisplay):
         optimalFitness = 0
@@ -122,5 +158,22 @@ def benchmark(function, times=100):
         if i < 10 or i % 10 == 0:
             print '{0}\t{1}'.format(i, averageTime)
 
+t = Test
+
 if __name__ == '__main__':
-    unittest.main(argv=sys.argv)
+    '''
+    python NQueens
+        -n [number of queens]
+        [unittest options]
+            Test.[test to run] (or t.[])
+                test_fitness
+                test_[4/8]
+                test_b[10/100/1000/10000] (benchmark)
+    '''
+    if len(sys.argv) > 1 and sys.argv[1] == '-n':
+        try:
+            solve(int(sys.argv[2]), True)
+        except IndexError as e:
+            print 'when using -n option, provide n value after it'
+    else:
+        unittest.main(argv=sys.argv)
