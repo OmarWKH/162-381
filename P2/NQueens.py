@@ -13,10 +13,15 @@ Formulation:
 getRandomAssignment:
     1*- list
     2- ordered list
+numberOfConflicts:
+    1- dir (cound diagonl as 4 vs count diagonal as 1)
+    2- # of conflicting queens (even if same diagonal)
 mutate:
     var: random (!)
     1- min_conflict(var)
     2- overall fitness
+    ..
+    don't pick last mutated variable
 solve:
     1*- iterative
     2- recursive
@@ -39,6 +44,8 @@ benchmark:
     2- redirect output (stdout) to no where instead of comman line
 Parallel:
     1- solve multiple, return earliest
+        1- var: MCV
+        2- random
     2- queen conflicts for loop
 No solution/stuck:
     1- n-times
@@ -63,10 +70,10 @@ def getRandomAssignment(n):
 def getFitness(queens):
     fitness = 0
 
-    for queen in queens:
-        fitness += numberOfConfilct(queen,queens, True)
-    return fitness
+    for column in range(0, len(queens)):
+        fitness += numberOfConfilct(column, queens, True)
 
+    return fitness
 
 def numberOfConfilct(indexOfQueen, queens, excludePrevious):
     conflicts = 0
@@ -75,9 +82,9 @@ def numberOfConfilct(indexOfQueen, queens, excludePrevious):
     for col, row in enumerate(queens[indexOfNext:], indexOfNext):
         otherQueen = (col, row)
         if(queen != otherQueen):
-            if( abs(queen[0] - otherQueen[0]) == abs( queen[1] - otherQueen[1] ) ):   # x-x == y-y diagnoal
+            if abs(queen[0] - otherQueen[0]) == abs( queen[1] - otherQueen[1] ):   # x-x == y-y diagnoal
                 conflicts += 1
-            elif(queen[1] == otherQueen[1] ):# y = y row check
+            elif(queen[1] == otherQueen[1]):    # y = y row check
                 conflicts += 1
     return conflicts
 
@@ -100,13 +107,8 @@ def minConflictValue(queenColumn, queens):# n
             minRows = [row]
         elif numConflicts == minConfilct:
             minRows.append(row)
-        print row, numConflicts
-    print minRows
 
     return random.sample(minRows, 1)[0] #return the min row conficlt
-
-
-
 
 def solve(n, doDisplay, initial=None):
     startTime = datetime.now()
@@ -117,12 +119,19 @@ def solve(n, doDisplay, initial=None):
 
     if doDisplay:
         display(current, startTime)
-    '''
-    while not solved:
-        child <- mutate
-        if better(child.fitness, parent.fitness): change, display(initialQueens, startTime)
-    return solution
-    '''
+    
+    while current.fitness > 0:
+        child = mutate(current.queens)
+        child = Configuration(child)
+
+        if child.fitness < current.fitness:
+            if doDisplay:
+                display(child, startTime)
+            current = child
+        elif child.fitness == current.fitness:
+            if doDisplay:
+                display(child, startTime)
+            current = child
     return current
 
 def display(configuration, time):
@@ -170,9 +179,9 @@ class Test(unittest.TestCase):
         self.b(10000)
 
     def test_fitness(self):
-        queens = Configuration([0, 2, 1, 3])
+        queens = Configuration([5, 2, 0, 7, 4, 7, 1, 6])
         display(queens, datetime.now())
-        self.assertEqual(0, queens.fitness)
+        self.assertEqual(1, queens.fitness)
 
     def test_minconflict(self):
         queens = [3, 0, 1, 3]
