@@ -79,14 +79,54 @@ def numberOfConfilct(indexOfQueen, queens, excludePrevious):
     conflicts = 0
     queen = (indexOfQueen, queens[indexOfQueen])
     indexOfNext = indexOfQueen + 1 if excludePrevious else 0
+
+    # (R)ight, (L)eft, U(p), D(own)
+    rowR = False
+    rowL = False
+    diagonalUR = False
+    diagonalUL = False
+    diagonalDR = False
+    diagonalDL = False
+
     for col, row in enumerate(queens[indexOfNext:], indexOfNext):
         otherQueen = (col, row)
+        allTrue = rowR and rowL and diagonalUR and diagonalUL and diagonalDR and diagonalDL
+        if allTrue:
+            break
+        if not rowR:
+            rowR = sameRow(queen, otherQueen) and queen[0] < otherQueen[0]
+        if not rowL:
+            rowL = sameRow(queen, otherQueen) and queen[0] > otherQueen[0]
+        if not diagonalUR:
+            diagonalUR = sameDiagonal(queen, otherQueen) and queen[0] < otherQueen[0] and queen[1] > otherQueen[1]
+        if not diagonalDR:
+            diagonalDR = sameDiagonal(queen, otherQueen) and queen[0] < otherQueen[0] and  queen[1] < otherQueen[1]
+        if not diagonalUL:
+            diagonalUL = sameDiagonal(queen, otherQueen) and queen[0] > otherQueen[0] and queen[1] > otherQueen[1]
+        if not diagonalDL:
+            diagonalDL = sameDiagonal(queen, otherQueen) and queen[0] > otherQueen[0] and queen[1] < otherQueen[1]
+    conflicts = int(rowR) + int(rowL) + int(diagonalUR) + int(diagonalUL) + int(diagonalDR) + int(diagonalDL)
+    return conflicts
+'''
+    sameRow = False
+    sameDiagonal = False
+    for col, row in enumerate(queens[indexOfNext:], indexOfNext):
         if(queen != otherQueen):
-            if abs(queen[0] - otherQueen[0]) == abs( queen[1] - otherQueen[1] ):   # x-x == y-y diagnoal
+            if not sameRow:
+                sameRow = sameRow(queen, otherQueen)
+            if not sameDiagonal:
+                sameDiagonal = sameDiagonal(queen, otherQueen)
+            if abs(queen[0] - otherQueen[0]) == abs( queen[1] - otherQueen[1] && ):   # x-x == y-y diagnoal
                 conflicts += 1
             elif(queen[1] == otherQueen[1]):    # y = y row check
                 conflicts += 1
-    return conflicts
+'''
+
+def sameRow(queen1, queen2):
+    return queen1[1] == queen2[1]
+
+def sameDiagonal(queen1, queen2):
+    return abs(queen1[0] - queen2[0]) == abs(queen1[1] - queen2[1])
 
 def mutate(queens):
     queen = random.randrange(0, len(queens))
@@ -118,6 +158,7 @@ def solve(n, doDisplay, initial=None):
     current = Configuration(initialQueens)
 
     if doDisplay:
+        steps = 0
         display(current, startTime)
     
     while current.fitness > 0:
@@ -126,12 +167,17 @@ def solve(n, doDisplay, initial=None):
 
         if child.fitness < current.fitness:
             if doDisplay:
+                steps += 1
                 display(child, startTime)
             current = child
         elif child.fitness == current.fitness:
             if doDisplay:
+                steps += 1
                 display(child, startTime)
             current = child
+
+    if doDisplay:
+        print steps, initialQueens
     return current
 
 def display(configuration, time):
