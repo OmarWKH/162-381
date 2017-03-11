@@ -61,13 +61,52 @@ def getRandomAssignment(n):
     return random.sample(range(0, n), n)
 
 def getFitness(queens):
-    return 0
+    fitness = 0
+
+    for queen in queens:
+        fitness += numberOfConfilct(queen,queens, True)
+    return fitness
+
+
+def numberOfConfilct(indexOfQueen, queens, excludePrevious):
+    conflicts = 0
+    queen = (indexOfQueen, queens[indexOfQueen])
+    indexOfNext = indexOfQueen + 1 if excludePrevious else 0
+    for col, row in enumerate(queens[indexOfNext:], indexOfNext):
+        otherQueen = (col, row)
+        if(queen != otherQueen):
+            if( abs(queen[0] - otherQueen[0]) == abs( queen[1] - otherQueen[1] ) ):   # x-x == y-y diagnoal
+                conflicts += 1
+            elif(queen[1] == otherQueen[1] ):# y = y row check
+                conflicts += 1
+    return conflicts
 
 def mutate(queens):
-    pass
-    
-def minConflictValue(queenColumn, queens):
-    pass
+    queen = random.randrange(0, len(queens))
+    row = minConflictValue(queen, queens)
+    newQueens = list(queens)
+    newQueens[queen] = row
+    return newQueens
+
+def minConflictValue(queenColumn, queens):# n
+    minConfilct = sys.maxint
+    queens = list(queens)
+    minRows = []
+    for row in range(0, len(queens)):
+        queens[queenColumn] = row
+        numConflicts = numberOfConfilct(queenColumn, queens, False)
+        if numConflicts < minConfilct:
+            minConfilct = numConflicts
+            minRows = [row]
+        elif numConflicts == minConfilct:
+            minRows.append(row)
+        print row, numConflicts
+    print minRows
+
+    return random.sample(minRows, 1)[0] #return the min row conficlt
+
+
+
 
 def solve(n, doDisplay, initial=None):
     startTime = datetime.now()
@@ -85,7 +124,7 @@ def solve(n, doDisplay, initial=None):
     return solution
     '''
     return current
-    
+
 def display(configuration, time):
     timeDiff = datetime.now() - time
 
@@ -131,13 +170,13 @@ class Test(unittest.TestCase):
         self.b(10000)
 
     def test_fitness(self):
-        queens = Configuration([2, 0, 3, 1])
+        queens = Configuration([0, 2, 1, 3])
         display(queens, datetime.now())
         self.assertEqual(0, queens.fitness)
 
     def test_minconflict(self):
         queens = [3, 0, 1, 3]
-        possibleAnswers = [1, 2, 3]
+        possibleAnswers = [1, 3]
         answer = minConflictValue(3, queens)
         print answer
         self.assertTrue(answer in possibleAnswers)
@@ -145,7 +184,7 @@ class Test(unittest.TestCase):
     def nQueens(self, n, doDisplay):
         optimalFitness = 0
         solution = solve(n, doDisplay)
-        
+
         self.assertEqual(optimalFitness, solution.fitness)
 
 def benchmark(function, times=100):
