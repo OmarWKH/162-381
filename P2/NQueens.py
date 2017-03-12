@@ -52,6 +52,10 @@ def numberOfConfilct(indexOfQueen, queens, excludePrevious):
             diagonalDL = sameDiagonal(queen, otherQueen) and queen[0] > otherQueen[0] and queen[1] < otherQueen[1]
     conflicts = int(rowR) + int(rowL) + int(diagonalUR) + int(diagonalUL) + int(diagonalDR) + int(diagonalDL)
     return conflicts
+
+def maxConflictedQueen(queens):
+    queens_conflicts = {queen : numberOfConfilct(queen, queens, False) for queen in queens}
+    return max(queens_conflicts, key=queens_conflicts.get)
 '''
     sameRow = False
     sameDiagonal = False
@@ -74,6 +78,7 @@ def sameDiagonal(queen1, queen2):
     return abs(queen1[0] - queen2[0]) == abs(queen1[1] - queen2[1])
 
 def mutate(queens):
+    # queen = maxConflictedQueen(queens)
     queen = random.randrange(0, len(queens))
     row = minConflictValue(queen, queens)
     newQueens = list(queens)
@@ -114,15 +119,15 @@ def solve(n, doDisplay=True, seed=None):
     limit = 2*n # play with this value # simulated annealing
     counter = 0
     resets = 0
+    # min_conflicts = current.fitness # belong to second one below
+
     while current.fitness > 0:
         child = mutate(current.queens)
         child = Configuration(child)
 
-        if doDisplay:
-            steps += 1
-
         if child.fitness < current.fitness:
             if doDisplay:
+                steps += 1
                 counter = 0
                 display(child, startTime)
             current = child
@@ -133,6 +138,28 @@ def solve(n, doDisplay=True, seed=None):
                 counter = 0
                 resets += 1
             current = child
+        
+        ''' # second one
+        if doDisplay:
+            steps += 1
+            display(child, startTime)
+            print min_conflicts.__str__() + "HI"
+
+        if child.fitness < min_conflicts:
+            counter = 0
+            min_conflicts = child.fitness
+        else:
+            counter += 1
+
+        if counter > limit:
+            current = Configuration(getRandomAssignment(n))
+            counter = 0
+            resets += 1
+            min_conflicts = current.fitness
+        else:
+            current = child
+        '''
+
         '''
         elif child.fitness == current.fitness:
             if doDisplay:
