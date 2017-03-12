@@ -125,9 +125,11 @@ def solve(n, doDisplay=True, seed=None):
         child = mutate(current.queens)
         child = Configuration(child)
 
+        if doDisplay:
+            steps += 1
+        
         if child.fitness < current.fitness:
             if doDisplay:
-                steps += 1
                 counter = 0
                 display(child, startTime)
             current = child
@@ -251,7 +253,6 @@ def benchmark(n, times=100, writer=None):
     averageTime = 0
     
     for i in range(1, times+1):
-        startTime = datetime.now()
 
         seed = random.randint(0, sys.maxint)
 
@@ -259,6 +260,7 @@ def benchmark(n, times=100, writer=None):
         if writer:
             writer.writerow(['seed', i, seed])
 
+        startTime = datetime.now()
         result = solve(n, False, seed=seed)
         
         timeDiff = (datetime.now() - startTime).total_seconds()
