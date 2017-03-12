@@ -22,6 +22,8 @@ mutate:
     2- overall fitness
     ..
     don't pick last mutated variable
+    ..
+    multi variable mutation
 solve:
     1*- iterative
     2- recursive
@@ -161,23 +163,35 @@ def solve(n, doDisplay, initial=None):
         steps = 0
         display(current, startTime)
     
+    limit = 2*n # play with this value # simulated annealing
+    counter = 0
+    resets = 0
     while current.fitness > 0:
         child = mutate(current.queens)
         child = Configuration(child)
 
         if child.fitness < current.fitness:
             if doDisplay:
+                counter = 0
                 steps += 1
                 display(child, startTime)
             current = child
+        elif child.fitness >= current.fitness:
+            counter += 1
+            if counter > limit:
+                current = Configuration(getRandomAssignment(n))
+                counter = 0
+                resets += 1
+            current = child
+        '''
         elif child.fitness == current.fitness:
             if doDisplay:
                 steps += 1
                 display(child, startTime)
-            current = child
+        '''
 
     if doDisplay:
-        print steps, initialQueens
+        print 'steps: {0}, resets: {1}, initial: {2}'.format(steps, resets, initialQueens)
     return current
 
 def display(configuration, time):
@@ -235,6 +249,10 @@ class Test(unittest.TestCase):
         answer = minConflictValue(3, queens)
         print answer
         self.assertTrue(answer in possibleAnswers)
+
+    def test_config(self):
+        queens = [3, 7, 6, 0, 2, 9, 1, 5, 4, 8]
+        solve(10, True, queens)
 
     def nQueens(self, n, doDisplay):
         optimalFitness = 0
