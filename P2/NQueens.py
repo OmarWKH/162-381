@@ -105,9 +105,6 @@ def solve(n, doDisplay, initial=None):
         steps = 0
         display(current, startTime)
     
-    limit = 2*n # play with this value # simulated annealing
-    counter = 0
-    resets = 0
     while current.fitness > 0:
         child = mutate(current.queens)
         child = Configuration(child)
@@ -115,27 +112,12 @@ def solve(n, doDisplay, initial=None):
         if doDisplay:
             steps += 1
 
-        if child.fitness < current.fitness:
-            if doDisplay:
-                counter = 0
-                display(child, startTime)
-            current = child
-        elif child.fitness >= current.fitness:
-            counter += 1
-            if counter > limit:
-                current = Configuration(getRandomAssignment(n))
-                counter = 0
-                resets += 1
-            current = child
-        '''
-        elif child.fitness == current.fitness:
-            if doDisplay:
-                steps += 1
-                display(child, startTime)
-        '''
+        if doDisplay:
+            display(child, startTime)
+        current = child
 
     if doDisplay:
-        print 'steps: {0}, resets: {1}, initial: {2}'.format(steps, resets, initialQueens)
+        print 'steps: {0}, initial: {1}'.format(steps, initialQueens)
     return current
 
 def display(configuration, time):
