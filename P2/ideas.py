@@ -5,6 +5,7 @@ some enhance points:
     1- fitness
     2- minconflict
     3- changing current/child
+    4- check on fitness from beginning
 
 Formulation:
     1- Tuples
@@ -16,6 +17,7 @@ getRandomAssignment:
 numberOfConflicts:
     1- dir (cound diagonl as 4 vs count diagonal as 1)
     2- # of conflicting queens (even if same diagonal)
+	3- 6 direction method of counting (4 diagonal, 2 sideways)
 mutate:
     var: random (!)
     1- min_conflict(var)
@@ -24,6 +26,7 @@ mutate:
     don't pick last mutated variable
     ..
     multi variable mutation
+	3- swap between queens
 solve:
     1*- iterative
     2- recursive
