@@ -98,7 +98,7 @@ def minConflictValue(queenColumn, queens):# n
 
     return minRows[random.randrange(0, len(minRows))]
 
-def solve(n, doDisplay=True, seed=None):
+def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
     startTime = datetime.now()
 
     if seed:
@@ -113,7 +113,7 @@ def solve(n, doDisplay=True, seed=None):
     
     if doDisplay:
         steps = 0
-        display(queens, startTime)
+        display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
     
     limit = n
     count = 0
@@ -128,24 +128,26 @@ def solve(n, doDisplay=True, seed=None):
             count = 0
 
         if doDisplay:
-            display(queens, startTime)
+            display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
             steps += 1
 
     if doDisplay:
         print 'steps: {0}, resets: {1}, initial: {2}, seed: {3}'.format(steps, resets, initialQueens, seed)
     return (queens, initialQueens, seed)
 
-def display(queens, time):
+def display(queens, time, displayBoard=True, displayQueens=True):
     timeDiff = datetime.now() - time
 
     queens_range = range(0, len(queens))
+    queens = queens if displayQueens else ''
     board = ''
-    for row in queens_range:
-        for col in queens_range:
-            rowQ = queens[col]
-            board += '|'
-            board += 'Q' if rowQ == row else '.'
-        board += '|\n'
+    if displayBoard:
+        for row in queens_range:
+            for col in queens_range:
+                rowQ = queens[col]
+                board += '|'
+                board += 'Q' if rowQ == row else '.'
+            board += '|\n'
 
     print timeDiff
     print queens
