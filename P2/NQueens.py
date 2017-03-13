@@ -55,7 +55,16 @@ def numberOfConfilct(indexOfQueen, queens, excludePrevious):
 
 def maxConflictedQueen(queens):
     queens_conflicts = {queen : numberOfConfilct(queen, queens, False) for queen in queens}
-    return max(queens_conflicts, key=queens_conflicts.get)
+    max_confliced_queens = []
+    max_val = 0
+    for queen in queens_conflicts:
+        if (queens_conflicts[queen] > max_val):
+            max_confliced_queens = [queen]
+            max_val = queens_conflicts[queen]
+        elif (queens_conflicts[queen] == max_val):
+            max_confliced_queens.append(queen)
+    return max_confliced_queens[random.randrange(0, len(max_confliced_queens))]
+    # return max(queens_conflicts, key=queens_conflicts.get)
 '''
     sameRow = False
     sameDiagonal = False
@@ -78,13 +87,30 @@ def sameDiagonal(queen1, queen2):
     return abs(queen1[0] - queen2[0]) == abs(queen1[1] - queen2[1])
 
 def mutate(queens):
-    # queen = maxConflictedQueen(queens)
-    queen = random.randrange(0, len(queens))
+    queen = maxConflictedQueen(queens)
+    # queen = random.randrange(0, len(queens))
     row = minConflictValue(queen, queens)
     newQueens = list(queens)
     newQueens[queen] = row
     return newQueens
-
+def mutate_two(queens):
+    oldFitness = getFitness(queens)
+    fitness_t = oldFitness+1
+    while(True):
+        queen1 = random.randrange(0, len(queens))
+        queen2 = random.randrange(0, len(queens))
+        if(queen1 != queen2):
+            temp = queens[queen1]
+            queens[queen1] = queens[queen2]
+            queens[queen2] = queens[temp]
+            fitness_t = getFitness(queens)
+            if(fitness_t < oldFitness):
+                print queen1.__str__() +' '+queen2.__str__() + 'fitness = ' + fitness_t.__str__()
+                return queens
+            else:
+                queens[queen2] = queens[queen1]
+                queens[queen1] = temp
+    return queens
 def minConflictValue(queenColumn, queens):# n
     minConfilct = sys.maxint
     queens = list(queens)
@@ -115,35 +141,18 @@ def solve(n, doDisplay=True, seed=None):
     if doDisplay:
         steps = 0
         display(current, startTime)
-    
-    limit = 2*n # play with this value # simulated annealing
+
+    limit = n/4 # play with this value # simulated annealing
     counter = 0
     resets = 0
-    # min_conflicts = current.fitness # belong to second one below
+    min_conflicts = current.fitness # belong to second one below
 
     while current.fitness > 0:
-        child = mutate(current.queens)
+        child = mutate (current.queens)
         child = Configuration(child)
-
-        if child.fitness < current.fitness:
-            if doDisplay:
-                steps += 1
-                counter = 0
-                display(child, startTime)
-            current = child
-        elif child.fitness >= current.fitness:
-            counter += 1
-            if counter > limit:
-                current = Configuration(getRandomAssignment(n))
-                counter = 0
-                resets += 1
-            current = child
-        
-        ''' # second one
         if doDisplay:
             steps += 1
             display(child, startTime)
-            print min_conflicts.__str__() + "HI"
 
         if child.fitness < min_conflicts:
             counter = 0
@@ -159,6 +168,23 @@ def solve(n, doDisplay=True, seed=None):
         else:
             current = child
         '''
+        if child.fitness < current.fitness:
+            if doDisplay:
+                steps += 1
+                counter = 0
+                display(child, startTime)
+            current = child
+        elif child.fitness >= current.fitness:
+            counter += 1
+            if counter > limit:
+                current = Configuration(getRandomAssignment(n))
+                counter = 0
+                resets += 1
+            current = child
+
+        ''' # second one
+
+
 
         '''
         elif child.fitness == current.fitness:
@@ -201,7 +227,7 @@ class Test(unittest.TestCase):
         self.nQueens(8, True)
 
     def b(self, n):
-        fileName = 'log/{0} -- {1}.csv'.format(str(datetime.now()).replace(':', '-'), n)
+        fileName = 'log\{0} -- {1}.csv'.format(str(datetime.now()).replace(':', '-'), n)
         with open(fileName, 'wb') as file:
             writer = csv.writer(file)
             writer.writerow(['i', 'solution', 'initial', 'timeDiff', 'averageTime', 'seed'])
@@ -249,7 +275,7 @@ class Test(unittest.TestCase):
 
 def benchmark(n, times=100, writer=None):
     averageTime = 0
-    
+
     for i in range(1, times+1):
         startTime = datetime.now()
 
@@ -260,7 +286,7 @@ def benchmark(n, times=100, writer=None):
             writer.writerow(['seed', i, seed])
 
         result = solve(n, False, seed=seed)
-        
+
         timeDiff = (datetime.now() - startTime).total_seconds()
         averageTime = ((i-1) * averageTime + timeDiff) / i # iterative average computation
 

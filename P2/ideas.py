@@ -5,7 +5,10 @@ some enhance points:
     1- fitness
     2- minconflict
     3- changing current/child
-    4- check on fitness from beginning
+    4- check on fitness from beginning and decide wither to continue or get new assignment
+    5- divide the configuration to two or multiple:
+        a- seprate to two (one are queens with conflicts above 3, the other is queens below 3)
+        then solve the below 3 after solved add a queen from above 3 until done 
 
 Formulation:
     1- Tuples
