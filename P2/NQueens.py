@@ -2,6 +2,7 @@ import random
 import unittest
 from datetime import datetime
 import sys
+import csv
 
 def getRandomAssignment(n):
     '''
@@ -97,14 +98,19 @@ def minConflictValue(queenColumn, queens):# n
 
     return minRows[random.randrange(0, len(minRows))]
 
-def solve(n, doDisplay, initial=None):
+def solve(n, doDisplay=True, seed=None):
     startTime = datetime.now()
-    random.seed()
+
+    if seed:
+        random.seed(seed)
+    else:
+        seed = random.randint(0, sys.maxint)
+        random.seed(seed)
 
     # not this is useless except for logging/display
-    initialQueens = initial or getRandomAssignment(n)
+    initialQueens = getRandomAssignment(n)
     queens = list(initialQueens)
-
+    
     if doDisplay:
         steps = 0
         display(queens, startTime)
@@ -126,9 +132,8 @@ def solve(n, doDisplay, initial=None):
             steps += 1
 
     if doDisplay:
-        print 'steps: {0}, resets: {1}, initial: {2}'.format(steps, resets, initialQueens)
-    
-    return queens
+        print 'steps: {0}, resets: {1}, initial: {2}, seed: {3}'.format(steps, resets, initialQueens, seed)
+    return (queens, initialQueens, seed)
 
 def display(queens, time):
     timeDiff = datetime.now() - time
@@ -154,7 +159,14 @@ class Test(unittest.TestCase):
         self.nQueens(8, True)
 
     def b(self, n):
-        benchmark(lambda: solve(n, False), 1000)
+        fileName = 'log/{0} -- {1}.csv'.format(str(datetime.now()).replace(':', '-'), n)
+        with open(fileName, 'wb') as file:
+            writer = csv.writer(file)
+            writer.writerow(['i', 'solution', 'initial', 'timeDiff', 'averageTime', 'seed'])
+            for instance in benchmark(n, 1000, writer=writer):
+                i, result, timeDiff, averageTime = instance
+                solution, initial, seed = result
+                writer.writerow([i, solution, initial, timeDiff, averageTime, seed])
 
     def test_b10(self):
         self.b(10)
@@ -182,21 +194,34 @@ class Test(unittest.TestCase):
         self.assertTrue(answer in possibleAnswers)
 
     def test_config(self):
-        queens = [3, 7, 6, 0, 2, 9, 1, 5, 4, 8]
-        solve(10, True, queens)
+        pass
+        # give seed instead of initial
+        #queens = [3, 7, 6, 0, 2, 9, 1, 5, 4, 8]
+        #solve(10, True, initial=queens)
 
     def nQueens(self, n, doDisplay):
         solution = solve(n, doDisplay)
-
         self.assertTrue(isSolved(solution))
 
-def benchmark(function, times=100):
+def benchmark(n, times=100, writer=None):
     averageTime = 0
+    
     for i in range(1, times+1):
         startTime = datetime.now()
-        function()
+
+        seed = random.randint(0, sys.maxint)
+
+        # write seed before solving, so if it gets stuck we could reproduce
+        if writer:
+            writer.writerow(['seed', i, seed])
+
+        result = solve(n, False, seed=seed)
+        
         timeDiff = (datetime.now() - startTime).total_seconds()
         averageTime = ((i-1) * averageTime + timeDiff) / i # iterative average computation
+
+        yield (i, result, timeDiff, averageTime)
+
         if i < 10 or i % 10 == 0:
             print '{0}\t{1}'.format(i, averageTime)
 
