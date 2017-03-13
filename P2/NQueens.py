@@ -93,6 +93,13 @@ def mutate(queens):
     newQueens = list(queens)
     newQueens[queen] = row
     return newQueens
+
+    ''' thought of this sudo code:
+            1- get two random queens
+            2- swap them
+            3- if fitness is better return new positions
+            4- else try again
+            
 def mutate_two(queens):
     oldFitness = getFitness(queens)
     fitness_t = oldFitness+1
@@ -111,6 +118,7 @@ def mutate_two(queens):
                 queens[queen2] = queens[queen1]
                 queens[queen1] = temp
     return queens
+    '''
 def minConflictValue(queenColumn, queens):# n
     minConfilct = sys.maxint
     queens = list(queens)
