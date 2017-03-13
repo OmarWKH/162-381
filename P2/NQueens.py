@@ -134,7 +134,7 @@ def minConflictValue(queenColumn, queens):# n
 
     return random.sample(minRows, 1)[0] #return the min row conficlt
 
-def solve(n, doDisplay=True, seed=None):
+def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
     startTime = datetime.now()
 
     if seed:
@@ -148,7 +148,7 @@ def solve(n, doDisplay=True, seed=None):
 
     if doDisplay:
         steps = 0
-        display(current, startTime)
+        display(current, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
 
     limit = n/4 # play with this value # simulated annealing
     counter = 0
@@ -161,7 +161,7 @@ def solve(n, doDisplay=True, seed=None):
 
         if doDisplay:
             steps += 1
-            display(child, startTime)
+            display(child, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
 
         if child.fitness < min_conflicts:
             counter = 0
@@ -181,7 +181,7 @@ def solve(n, doDisplay=True, seed=None):
             if doDisplay:
                 steps += 1
                 counter = 0
-                display(child, startTime)
+                display(child, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
             current = child
         elif child.fitness >= current.fitness:
             counter += 1
@@ -199,25 +199,26 @@ def solve(n, doDisplay=True, seed=None):
         elif child.fitness == current.fitness:
             if doDisplay:
                 steps += 1
-                display(child, startTime)
+                display(child, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
         '''
 
     if doDisplay:
         print 'steps: {0}, resets: {1}, initial: {2}, seed: {3}'.format(steps, resets, initialQueens, seed)
     return (current, initialQueens, seed)
 
-def display(configuration, time):
+def display(configuration, time, displayBoard=True, displayQueens=True):
     timeDiff = datetime.now() - time
 
-    queens = configuration.queens
+    queens = configuration.queens if displayQueens else ''
     queens_range = range(0, len(queens))
     board = ''
-    for row in queens_range:
-        for col in queens_range:
-            rowQ = queens[col]
-            board += '|'
-            board += 'Q' if rowQ == row else '.'
-        board += '|\n'
+    if displayBoard:
+        for row in queens_range:
+            for col in queens_range:
+                rowQ = queens[col]
+                board += '|'
+                board += 'Q' if rowQ == row else '.'
+            board += '|\n'
 
     print timeDiff, configuration.fitness
     print queens
