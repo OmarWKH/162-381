@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 import sys
 import csv
+import collections
 
 def getRandomAssignment(n):
     '''
@@ -10,7 +11,25 @@ def getRandomAssignment(n):
     row = queens[col]
     top left is (0, 0)
     '''
-    return random.sample(xrange(0, n), n)
+    rows = collections.defaultdict(lambda: 1)
+    diagonalR = collections.defaultdict(lambda: 0)
+    diagonalL = collections.defaultdict(lambda: 0)
+    queens = random.sample(xrange(0, n), n)
+    fitness = 0
+    for col, row in enumerate(queens):
+        dR = getDiagonalRight(col, row, n)
+        dL = getDiagonalLeft(col, row)
+        queen = (col, row)
+        if sameDiagonal(queen, dR):
+            diagonalR[dR] += 1
+            if diagonalR[dR] > 1:
+                fitness += 1
+        if sameDiagonal(queen, dL):
+            diagonalL[dL] += 1
+            if diagonalL[dL] > 1:
+                fitness += 1
+
+    return (queens, rows, diagonalR, diagonalL, fitness)
 
 def isSolved(queens):
     for column in xrange(0, len(queens)):
@@ -81,6 +100,22 @@ def numberOfConfilct(qCol, queens, maxConflicts=sys.maxint):
 
     return conflicts
 
+def getDiagonalRight(x, y, n):
+    if x + y < n - 1:
+        return (0, x + y)
+    elif x + y > n - 1:
+        return (x + y - n - 1, n - 1)
+    else:
+        return (0, n - 1)
+
+def getDiagonalLeft(x, y):
+    if x > y:
+        return (x - y, 0)
+    elif y > x:
+        return (0, y - x)
+    else:
+        return (0, 0)
+
 def sameRow(queen1, queen2):
     return queen1[1] == queen2[1]
 
@@ -88,21 +123,24 @@ def sameDiagonal(queen1, queen2):
     return abs(queen1[0] - queen2[0]) == abs(queen1[1] - queen2[1])
 
 def mutate(queens, excludeQueen=None):
-    queen, altQueen = random.sample(queens, 2)
+    queen, altQueen = random.sample(queens[0], 2)
     queen = queen if queen != excludeQueen else altQueen
     newRow, offset = minConflictValue(queen, queens)
     return (queen, newRow, offset) # mutated, variable to exclue next, conflict change
 
 def minConflictValue(queenColumn, queens):# n
-    queenRow = queens[queenColumn]
+    queenRow = queens[0][queenColumn]
     currentConflict = 0
 
     minConfilct = sys.maxint
     minRows = []
-    for row in xrange(0, len(queens)):
-        queens[queenColumn] = row
-        # only check affected
-        numConflicts = numberOfConfilct(queenColumn, queens, minConfilct)
+    for row in xrange(0, len(queens[0])):
+
+        rowConflict = queens[1][row] + 1
+        diagonalRConflict = queens[2][getDiagonalRight(queenColumn, row, len(queens[0]))] + 1
+        diagonalLConflict = queens[3][getDiagonalLeft(queenColumn, row)] + 1
+
+        numConflicts = rowConflict + diagonalRConflict + diagonalLConflict
 
         if row == queenRow:
             currentConflict = numConflicts
@@ -125,31 +163,43 @@ def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
         seed = random.randint(0, sys.maxint)
         random.seed(seed)
 
-    queens = getRandomAssignment(n)
+    queensAndConflicts = getRandomAssignment(n)
     
     if doDisplay:
         steps = 0
-        display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
+        display(queensAndConflicts[0], startTime, displayBoard=displayBoard, displayQueens=displayQueens)
     
     conflictBalance = 0
     limit = n
     count = 0
     resets = 0
     excludeQueen = None
-    while not isSolved(queens):
-        excludeQueen, newRow, conflictOffset = mutate(queens, excludeQueen)
+    while not isSolved(queensAndConflicts[0]):
+        excludeQueen, newRow, conflictOffset = mutate(queensAndConflicts, excludeQueen)
 
         if conflictOffset < 0: #improvement or same 
             conflictBalance += conflictOffset
-            queens[excludeQueen] = newRow
+            
+            # change queen
+            oldRow = queensAndConflicts[0][excludeQueen]
+            queensAndConflicts[0][excludeQueen] = newRow
+            # remove from old
+            queensAndConflicts[1][oldRow] -= 1
+            queensAndConflicts[2][getDiagonalRight(excludeQueen, oldRow, n)] -= 1
+            queensAndConflicts[3][getDiagonalLeft(excludeQueen, oldRow)] -= 1
+            # add to new
+            queensAndConflicts[1][newRow] += 1
+            queensAndConflicts[2][getDiagonalRight(excludeQueen, newRow, n)] += 1
+            queensAndConflicts[3][getDiagonalLeft(excludeQueen, newRow)] += 1
+
             count = 0
             if doDisplay:
-                display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
+                display(queensAndConflicts[0], startTime, displayBoard=displayBoard, displayQueens=displayQueens)
         else:
             count =+ 1
 
         if count > limit:
-            queens = getRandomAssignment(n)
+            queensAndConflicts = getRandomAssignment(n)
             resets += 1
             count = 0
 
@@ -158,7 +208,7 @@ def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
 
     if doDisplay:
         print 'steps: {0}, resets: {1}, seed: {2}'.format(steps, resets, seed)
-    return (queens, seed)
+    return (queensAndConflicts[0], seed)
 
 def display(queens, time, displayBoard=True, displayQueens=True):
     timeDiff = datetime.now() - time
