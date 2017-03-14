@@ -13,7 +13,7 @@ def getRandomAssignment(n):
     return random.sample(xrange(0, n), n)
 
 def isSolved(queens):
-    for column in range(0, len(queens)):
+    for column in xrange(0, len(queens)):
         if hasConflict(column, queens, True):
             return False
     return True
@@ -90,24 +90,31 @@ def sameDiagonal(queen1, queen2):
 def mutate(queens, excludeQueen=None):
     queen, altQueen = random.sample(queens, 2)
     queen = queen if queen != excludeQueen else altQueen
-    row = minConflictValue(queen, queens)
-    queens[queen] = row
-    return (queens, queen) # mutated, variable to exclue next
+    newRow, offset = minConflictValue(queen, queens)
+    return (queen, newRow, offset) # mutated, variable to exclue next, conflict change
 
 def minConflictValue(queenColumn, queens):# n
+    queenRow = queens[queenColumn]
+    currentConflict = 0
+
     minConfilct = sys.maxint
     minRows = []
-    for row in range(0, len(queens)):
+    for row in xrange(0, len(queens)):
         queens[queenColumn] = row
         # only check affected
         numConflicts = numberOfConfilct(queenColumn, queens, minConfilct)
+
+        if row == queenRow:
+            currentConflict = numConflicts
+
         if numConflicts < minConfilct:
             minConfilct = numConflicts
             minRows = [row]
         elif numConflicts == minConfilct:
             minRows.append(row)
 
-    return minRows[random.randrange(0, len(minRows))]
+    offset = minConfilct - currentConflict
+    return (minRows[random.randrange(0, len(minRows))], offset)
 
 def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
     startTime = datetime.now()
@@ -118,33 +125,40 @@ def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
         seed = random.randint(0, sys.maxint)
         random.seed(seed)
 
-    # now this is useless except for logging/display
-    initialQueens = getRandomAssignment(n)
-    queens = list(initialQueens)
+    queens = getRandomAssignment(n)
     
     if doDisplay:
         steps = 0
         display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
     
+    conflictBalance = 0
     limit = n
     count = 0
     resets = 0
     excludeQueen = None
     while not isSolved(queens):
-        queens, excludeQueen = mutate(queens, excludeQueen)
-        count =+ 1
+        excludeQueen, newRow, conflictOffset = mutate(queens, excludeQueen)
+
+        if conflictOffset < 0: #improvement or same 
+            conflictBalance += conflictOffset
+            queens[excludeQueen] = newRow
+            count = 0
+            if doDisplay:
+                display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
+        else:
+            count =+ 1
+
         if count > limit:
             queens = getRandomAssignment(n)
             resets += 1
             count = 0
 
         if doDisplay:
-            display(queens, startTime, displayBoard=displayBoard, displayQueens=displayQueens)
             steps += 1
 
     if doDisplay:
-        print 'steps: {0}, resets: {1}, initial: {2}, seed: {3}'.format(steps, resets, initialQueens, seed)
-    return (queens, initialQueens, seed)
+        print 'steps: {0}, resets: {1}, seed: {2}'.format(steps, resets, seed)
+    return (queens, seed)
 
 def display(queens, time, displayBoard=True, displayQueens=True):
     timeDiff = datetime.now() - time
@@ -175,11 +189,11 @@ class Test(unittest.TestCase):
         fileName = 'log/{0} -- {1}.csv'.format(str(datetime.now()).replace(':', '-'), n)
         with open(fileName, 'wb') as file:
             writer = csv.writer(file)
-            writer.writerow(['i', 'solution', 'initial', 'timeDiff', 'averageTime', 'seed'])
+            writer.writerow(['i', 'solution', 'timeDiff', 'averageTime', 'seed'])
             for instance in benchmark(n, 1000, writer=writer):
                 i, result, timeDiff, averageTime = instance
-                solution, initial, seed = result
-                writer.writerow([i, solution, initial, timeDiff, averageTime, seed])
+                solution, seed = result
+                writer.writerow([i, solution, timeDiff, averageTime, seed])
 
     def test_b10(self):
         self.b(10)
@@ -219,7 +233,7 @@ class Test(unittest.TestCase):
 def benchmark(n, times=100, writer=None):
     averageTime = 0
     
-    for i in range(1, times+1):
+    for i in xrange(1, times+1):
         startTime = datetime.now()
 
         seed = random.randint(0, sys.maxint)
