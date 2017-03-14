@@ -30,10 +30,8 @@ def hasConflict(indexOfQueen, queens, excludePrevious):
             return True
     return False
 
-def numberOfConfilct(indexOfQueen, queens, maxConflicts=sys.maxint):
+def numberOfConfilct(qCol, queens, maxConflicts=sys.maxint):
     conflicts = 0
-    queen = (indexOfQueen, queens[indexOfQueen])
-    indexOfNext = indexOfQueen + 1
 
     # (R)ight, (L)eft, U(p), D(own)
     rowR = False
@@ -43,31 +41,44 @@ def numberOfConfilct(indexOfQueen, queens, maxConflicts=sys.maxint):
     diagonalDR = False
     diagonalDL = False
 
-    for col, row in enumerate(queens[indexOfNext:], indexOfNext):
-        otherQueen = (col, row)
+    qRow = queens[qCol]
+    for oCol, oRow in enumerate(queens):
         allTrue = rowR and rowL and diagonalUR and diagonalUL and diagonalDR and diagonalDL
         if allTrue:
             break
         if conflicts > maxConflicts:
             return sys.maxint
-        if not rowR:
-            rowR = sameRow(queen, otherQueen) and queen[0] < otherQueen[0]
-            conflicts += 1 if rowR else 0
-        if not rowL:
-            rowL = sameRow(queen, otherQueen) and queen[0] > otherQueen[0]
-            conflicts += 1 if rowL else 0
-        if not diagonalUR:
-            diagonalUR = sameDiagonal(queen, otherQueen) and queen[0] < otherQueen[0] and queen[1] > otherQueen[1]
-            conflicts += 1 if diagonalUR else 0
-        if not diagonalDR:
-            diagonalDR = sameDiagonal(queen, otherQueen) and queen[0] < otherQueen[0] and  queen[1] < otherQueen[1]
-            conflicts += 1 if diagonalDR else 0
-        if not diagonalUL:
-            diagonalUL = sameDiagonal(queen, otherQueen) and queen[0] > otherQueen[0] and queen[1] > otherQueen[1]
-            conflicts += 1 if diagonalUL else 0
-        if not diagonalDL:
-            diagonalDL = sameDiagonal(queen, otherQueen) and queen[0] > otherQueen[0] and queen[1] < otherQueen[1]
-            conflicts += 1 if diagonalDL else 0
+
+        if oCol == qCol:
+            continue
+
+        if oCol < qCol:
+            if oRow < qRow:
+                if not diagonalUL:
+                    diagonalUL = (qCol - oCol) == (qRow - oRow)
+                    conflicts += 1 if diagonalUL else 0
+            elif oRow > qRow:
+                if not diagonalDL:
+                    diagonalDL = (qCol - oCol) == (oRow - qRow)
+                    conflicts += 1 if diagonalDL else 0
+            else: # oRow == qRow
+                if not rowL:
+                    rowL = True
+                    conflicts += 1
+        else: #oCol > qCol
+            if oRow < qRow:
+                if not diagonalUR:
+                    diagonalUR = (oCol - qCol) == (qRow - oRow)
+                    conflicts += 1 if diagonalUR else 0
+            elif oRow > qRow:
+                if not diagonalDR:
+                    diagonalDR = (oCol - qCol) == (oRow - qRow)
+                    conflicts += 1 if diagonalDR else 0
+            else: # oRow == qRoow
+                if not rowR:
+                    rowR = True
+                    conflicts += 1
+
     return conflicts
 
 def sameRow(queen1, queen2):
@@ -107,7 +118,7 @@ def solve(n, doDisplay=True, displayBoard=True, displayQueens=True, seed=None):
         seed = random.randint(0, sys.maxint)
         random.seed(seed)
 
-    # not this is useless except for logging/display
+    # now this is useless except for logging/display
     initialQueens = getRandomAssignment(n)
     queens = list(initialQueens)
     
