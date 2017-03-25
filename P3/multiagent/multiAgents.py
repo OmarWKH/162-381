@@ -257,8 +257,47 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        value, action = self.value(gameState, self.index, gameState.getNumAgents())
+        return action
+
+    def value(self, gameState, agent, numAgents):
+        '''
+          Return a value,action pair.
+
+          For depth limit 2 and 2 agents, the value of agent will be between 0 and 3.
+          0 (agent 1) and 1 (agent 2) in depth 1.
+          2 (agent 1) and 3 (agent 2) in depth 2.
+          So agent % numAgents will refer to current agent index.
+          And agent/numAgents will refer to current depth.
+        '''
+        currentDepth = float(agent)/numAgents
+        if currentDepth >= self.depth or len(gameState.getLegalActions(agent % numAgents)) == 0:
+            valueActionPair = (self.evaluationFunction(gameState), None)
+        elif agent % numAgents == 0:
+            valueActionPair = self.maxValue(gameState, agent, numAgents)
+        else:
+            valueActionPair = self.chanceValue(gameState, agent, numAgents)
+        return valueActionPair
+
+    def maxValue(self, gameState, agent, numAgents):
+        maxValue = -sys.maxint
+        maxAction = None
+        for action in gameState.getLegalActions(agent % numAgents):
+            successor = gameState.generateSuccessor(agent % numAgents, action)
+            value = self.value(successor, agent+1, numAgents)[0]
+            if value > maxValue: # >=? random?
+                maxValue = value
+                maxAction = action
+        return (maxValue, maxAction)
+
+    def chanceValue(self, gameState, agent, numAgents):
+        actions = gameState.getLegalActions(agent % numAgents)
+        total = 0
+        for action in actions:
+            successor = gameState.generateSuccessor(agent % numAgents, action)
+            total += self.value(successor, agent+1, numAgents)[0]
+        value = total / len(actions)
+        return (value, None)
 
 def betterEvaluationFunction(currentGameState):
     """
