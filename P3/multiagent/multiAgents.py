@@ -286,11 +286,9 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    # if ghost not scared
-        # making them scared is good
-    # if ghost scared
-        # eating them is good
-    return 1.0/(mazeDistanceToClosestDot(currentGameState)+1) + currentGameState.getScore()
+    maxGhostScaredTimer = max([ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()])
+    distanceToClosestDot = mazeDistanceToClosestDot(currentGameState)
+    return 1.0*maxGhostScaredTimer + 1.0/(distanceToClosestDot+1) + currentGameState.getScore()
 
 # Abbreviation
 better = betterEvaluationFunction
