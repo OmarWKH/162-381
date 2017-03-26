@@ -115,6 +115,71 @@ class MultiAgentSearchAgent(Agent):
       is another abstract class.
     """
 
+    def Value(self, gameState, agent, numAgents, alpha=-sys.maxint, beta=sys.maxint):
+        '''
+          Return a value,action pair.
+
+          For depth limit 2 and 2 agents, the value of agent will be between 0 and 3.
+          0 (agent 1) and 1 (agent 2) in depth 1.
+          2 (agent 1) and 3 (agent 2) in depth 2.
+          So agent % numAgents will refer to current agent index.
+          And agent/numAgents will refer to current depth.
+        '''
+        '''
+        if alpha and beta are None do minimax
+        else if alpha is None and beta is sys.max do expectimax
+        else do apha-beta
+        '''
+        currentDepth = float(agent)/numAgents
+        if currentDepth >= self.depth or len(gameState.getLegalActions(agent % numAgents)) == 0:
+            valueActionPair = (self.evaluationFunction(gameState), None)
+        elif agent % numAgents == 0:
+            valueActionPair = self.maxValue(gameState, agent, numAgents, alpha, beta)
+        elif alpha is None and beta is sys.maxint:
+            valueActionPair = self.chanceValue(gameState, agent, numAgents)
+        else:
+            valueActionPair = self.minValue(gameState, agent, numAgents, alpha, beta)
+        return valueActionPair
+
+    def maxValue(self, gameState, agent, numAgents, alpha = None, beta = None):
+        maxValue = -sys.maxint
+        maxAction = None
+        for action in gameState.getLegalActions(agent % numAgents):
+            successor = gameState.generateSuccessor(agent % numAgents, action)
+            value = self.Value(successor, agent+1, numAgents, alpha, beta)[0]
+            if value > maxValue: # >=? random?
+                maxValue = value
+                maxAction = action
+            if beta and maxValue > beta:
+                return (maxValue, maxAction)
+            if alpha:
+                alpha = max(alpha, maxValue)
+        return (maxValue, maxAction)
+
+    def minValue(self, gameState, agent, numAgents, alpha = None, beta = None):
+        minValue = sys.maxint
+        minAction = None
+        for action in gameState.getLegalActions(agent % numAgents):
+            successor = gameState.generateSuccessor(agent % numAgents, action)
+            value = self.Value(successor, agent+1, numAgents, alpha, beta)[0]
+            if value < minValue: # <=? random?
+                minValue = value
+                minAction = action
+            if alpha and minValue < alpha:
+                return (minValue, minAction)
+            if beta:
+                beta = min(beta, minValue)
+        return (minValue, minAction)
+
+    def chanceValue(self, gameState, agent, numAgents, alpha=None, beta=sys.maxint):
+        actions = gameState.getLegalActions(agent % numAgents)
+        total = 0
+        for action in actions:
+            successor = gameState.generateSuccessor(agent % numAgents, action)
+            total += self.Value(successor, agent+1, numAgents, alpha, beta)[0]
+        value = total / len(actions)
+        return (value, None)
+
     def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
         self.index = 0 # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
@@ -145,25 +210,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         value, action = self.Value(gameState, self.index, gameState.getNumAgents(), None, None)
         return action
 
-    def Value(self, gameState, agent, numAgents, alpha=-sys.maxint, beta=sys.maxint):
-        '''
-          Return a value,action pair.
-
-          For depth limit 2 and 2 agents, the value of agent will be between 0 and 3.
-          0 (agent 1) and 1 (agent 2) in depth 1.
-          2 (agent 1) and 3 (agent 2) in depth 2.
-          So agent % numAgents will refer to current agent index.
-          And agent/numAgents will refer to current depth.
-        '''
-        currentDepth = float(agent)/numAgents
-        if currentDepth >= self.depth or len(gameState.getLegalActions(agent % numAgents)) == 0:
-            valueActionPair = (self.evaluationFunction(gameState), None)
-        elif agent % numAgents == 0:
-            valueActionPair = maxValue(gameState, agent, numAgents, self.Value, alpha, beta)
-        else:
-            valueActionPair = minValue(gameState, agent, numAgents, self.Value, alpha, beta)
-        return valueActionPair
-
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
@@ -175,55 +221,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         value, action = self.Value(gameState, self.index, gameState.getNumAgents())
         return action
-
-    def Value(self, gameState, agent, numAgents, alpha=-sys.maxint, beta=sys.maxint):
-        '''
-          Return a value,action pair.
-
-          For depth limit 2 and 2 agents, the value of agent will be between 0 and 3.
-          0 (agent 1) and 1 (agent 2) in depth 1.
-          2 (agent 1) and 3 (agent 2) in depth 2.
-          So agent % numAgents will refer to current agent index.
-          And agent/numAgents will refer to current depth.
-        '''
-        currentDepth = float(agent)/numAgents
-        if currentDepth >= self.depth or len(gameState.getLegalActions(agent % numAgents)) == 0:
-            valueActionPair = (self.evaluationFunction(gameState), None)
-        elif agent % numAgents == 0:
-            valueActionPair = maxValue(gameState, agent, numAgents, self.Value, alpha, beta)
-        else:
-            valueActionPair = minValue(gameState, agent, numAgents, self.Value, alpha, beta)
-        return valueActionPair
-
-def maxValue(gameState, agent, numAgents, valueF, alpha = None, beta = None):
-    maxValue = -sys.maxint
-    maxAction = None
-    for action in gameState.getLegalActions(agent % numAgents):
-        successor = gameState.generateSuccessor(agent % numAgents, action)
-        value = valueF(successor, agent+1, numAgents, alpha, beta)[0]
-        if value > maxValue: # >=? random?
-            maxValue = value
-            maxAction = action
-        if beta and maxValue > beta:
-            return (maxValue, maxAction)
-        if alpha:
-            alpha = max(alpha, maxValue)
-    return (maxValue, maxAction)
-
-def minValue(gameState, agent, numAgents, valueF, alpha = None, beta = None):
-    minValue = sys.maxint
-    minAction = None
-    for action in gameState.getLegalActions(agent % numAgents):
-        successor = gameState.generateSuccessor(agent % numAgents, action)
-        value = valueF(successor, agent+1, numAgents, alpha, beta)[0]
-        if value < minValue: # <=? random?
-            minValue = value
-            minAction = action
-        if alpha and minValue < alpha:
-            return (minValue, minAction)
-        if beta:
-            beta = min(beta, minValue)
-    return (minValue, minAction)
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -237,47 +234,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        value, action = self.value(gameState, self.index, gameState.getNumAgents())
+        value, action = self.Value(gameState, self.index, gameState.getNumAgents(), None)
         return action
-
-    def value(self, gameState, agent, numAgents):
-        '''
-          Return a value,action pair.
-
-          For depth limit 2 and 2 agents, the value of agent will be between 0 and 3.
-          0 (agent 1) and 1 (agent 2) in depth 1.
-          2 (agent 1) and 3 (agent 2) in depth 2.
-          So agent % numAgents will refer to current agent index.
-          And agent/numAgents will refer to current depth.
-        '''
-        currentDepth = float(agent)/numAgents
-        if currentDepth >= self.depth or len(gameState.getLegalActions(agent % numAgents)) == 0:
-            valueActionPair = (self.evaluationFunction(gameState), None)
-        elif agent % numAgents == 0:
-            valueActionPair = self.maxValue(gameState, agent, numAgents)
-        else:
-            valueActionPair = self.chanceValue(gameState, agent, numAgents)
-        return valueActionPair
-
-    def maxValue(self, gameState, agent, numAgents):
-        maxValue = -sys.maxint
-        maxAction = None
-        for action in gameState.getLegalActions(agent % numAgents):
-            successor = gameState.generateSuccessor(agent % numAgents, action)
-            value = self.value(successor, agent+1, numAgents)[0]
-            if value > maxValue: # >=? random?
-                maxValue = value
-                maxAction = action
-        return (maxValue, maxAction)
-
-    def chanceValue(self, gameState, agent, numAgents):
-        actions = gameState.getLegalActions(agent % numAgents)
-        total = 0
-        for action in actions:
-            successor = gameState.generateSuccessor(agent % numAgents, action)
-            total += self.value(successor, agent+1, numAgents)[0]
-        value = total / len(actions)
-        return (value, None)
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -548,7 +506,7 @@ def depthFirstSearch(problem):
     print "Start:", problem.getStartState()
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    
+
     """
     stack = util.Stack()
     return genericGraphSearch(problem, stack)
