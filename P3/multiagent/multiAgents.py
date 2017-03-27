@@ -115,7 +115,12 @@ class MultiAgentSearchAgent(Agent):
       is another abstract class.
     """
 
-    def Value(self, gameState, agent, numAgents, alpha=-sys.maxint, beta=sys.maxint):
+    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
+        self.index = 0 # Pacman is always agent index 0
+        self.evaluationFunction = util.lookup(evalFn, globals())
+        self.depth = int(depth)
+
+    def Value(self, gameState, agent, numAgents, adversarialFn, alpha=None, beta=None):
         '''
           Return a value,action pair.
 
@@ -124,29 +129,24 @@ class MultiAgentSearchAgent(Agent):
           2 (agent 1) and 3 (agent 2) in depth 2.
           So agent % numAgents will refer to current agent index.
           And agent/numAgents will refer to current depth.
-        '''
-        '''
-        if alpha and beta are None do minimax
-        else if alpha is None and beta is sys.max do expectimax
-        else do apha-beta
+
+          adversarialFn is the value function for other agents (minValue, chanceValue)
         '''
         currentDepth = float(agent)/numAgents
         if currentDepth >= self.depth or len(gameState.getLegalActions(agent % numAgents)) == 0:
             valueActionPair = (self.evaluationFunction(gameState), None)
         elif agent % numAgents == 0:
-            valueActionPair = self.maxValue(gameState, agent, numAgents, alpha, beta)
-        elif alpha is None and beta is sys.maxint:
-            valueActionPair = self.chanceValue(gameState, agent, numAgents)
+            valueActionPair = self.maxValue(gameState, agent, numAgents, adversarialFn, alpha, beta)
         else:
-            valueActionPair = self.minValue(gameState, agent, numAgents, alpha, beta)
+            valueActionPair = adversarialFn(gameState, agent, numAgents, adversarialFn, alpha, beta)
         return valueActionPair
 
-    def maxValue(self, gameState, agent, numAgents, alpha = None, beta = None):
+    def maxValue(self, gameState, agent, numAgents, adversarialFn, alpha = None, beta = None):
         maxValue = -sys.maxint
         maxAction = None
         for action in gameState.getLegalActions(agent % numAgents):
             successor = gameState.generateSuccessor(agent % numAgents, action)
-            value = self.Value(successor, agent+1, numAgents, alpha, beta)[0]
+            value = self.Value(successor, agent+1, numAgents, adversarialFn, alpha, beta)[0]
             if value > maxValue: # >=? random?
                 maxValue = value
                 maxAction = action
@@ -156,12 +156,12 @@ class MultiAgentSearchAgent(Agent):
                 alpha = max(alpha, maxValue)
         return (maxValue, maxAction)
 
-    def minValue(self, gameState, agent, numAgents, alpha = None, beta = None):
+    def minValue(self, gameState, agent, numAgents, adversarialFn, alpha = None, beta = None):
         minValue = sys.maxint
         minAction = None
         for action in gameState.getLegalActions(agent % numAgents):
             successor = gameState.generateSuccessor(agent % numAgents, action)
-            value = self.Value(successor, agent+1, numAgents, alpha, beta)[0]
+            value = self.Value(successor, agent+1, numAgents, adversarialFn, alpha, beta)[0]
             if value < minValue: # <=? random?
                 minValue = value
                 minAction = action
@@ -171,19 +171,14 @@ class MultiAgentSearchAgent(Agent):
                 beta = min(beta, minValue)
         return (minValue, minAction)
 
-    def chanceValue(self, gameState, agent, numAgents, alpha=None, beta=sys.maxint):
+    def chanceValue(self, gameState, agent, numAgents, adversarialFn, alpha=None, beta=None):
         actions = gameState.getLegalActions(agent % numAgents)
         total = 0
         for action in actions:
             successor = gameState.generateSuccessor(agent % numAgents, action)
-            total += self.Value(successor, agent+1, numAgents, alpha, beta)[0]
+            total += self.Value(successor, agent+1, numAgents, adversarialFn, alpha, beta)[0]
         value = total / len(actions)
         return (value, None)
-
-    def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
-        self.index = 0 # Pacman is always agent index 0
-        self.evaluationFunction = util.lookup(evalFn, globals())
-        self.depth = int(depth)
 
 class MinimaxAgent(MultiAgentSearchAgent):
     """
@@ -207,7 +202,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        value, action = self.Value(gameState, self.index, gameState.getNumAgents(), None, None)
+        value, action = self.Value(gameState, self.index, gameState.getNumAgents(), self.minValue)
         return action
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -219,7 +214,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        value, action = self.Value(gameState, self.index, gameState.getNumAgents())
+        value, action = self.Value(gameState, self.index, gameState.getNumAgents(), self.minValue, -sys.maxint, sys.maxint)
         return action
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -234,7 +229,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        value, action = self.Value(gameState, self.index, gameState.getNumAgents(), None)
+        value, action = self.Value(gameState, self.index, gameState.getNumAgents(), self.chanceValue)
         return action
 
 def betterEvaluationFunction(currentGameState):
