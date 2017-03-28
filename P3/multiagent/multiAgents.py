@@ -237,7 +237,10 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: We considered:
+      1- Looping over ghosts scareTimers and taking the maximum
+      2- Taking the reciprocal of distance to closest dot, finding it using AnyFoodSearchProblem with BFS
+      3- State score
     """
     maxGhostScaredTimer = max([ghostState.scaredTimer for ghostState in currentGameState.getGhostStates()])
     distanceToClosestDot = mazeDistanceToClosestDot(currentGameState)

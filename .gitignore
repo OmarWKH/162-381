@@ -3,6 +3,7 @@
 
 *.sublime-workspace
 *.sublime-project
+*.vscode
 
 __pycache__/
 *.pyc
