@@ -72,13 +72,16 @@ class ReflexAgent(Agent):
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
+
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         # min distance to food
         minFoodDistance = 1
-        foodDistances = [manhattanDistance(newPos, food) for food in newFood.asList()]
+        foodDistances = {food: manhattanDistance(newPos, food) for food in newFood.asList()}
+        closestFood = None
         if len(foodDistances) != 0:
-            minFoodDistance = min(foodDistances)
+            closestFood = min(foodDistances, key=foodDistances.get)
+            minFoodDistance = foodDistances[closestFood]
 
         # close ghosts
         closeGhosts = 1
@@ -88,7 +91,26 @@ class ReflexAgent(Agent):
                 if ghostState.scaredTimer <= 0:
                     closeGhosts += distance
 
-        return closeGhosts + 1.0/minFoodDistance + successorGameState.getScore()
+        # wall in between
+        wall = False
+        if closestFood:
+            wall = wallInBetween(newPos, closestFood, successorGameState)
+
+        return closeGhosts + 1.0/minFoodDistance + successorGameState.getScore() + 3.0/(int(wall)+1) + 100.0/(closeGhosts)
+
+def wallInBetween(pos1,pos2, gameState):
+    walls = gameState.getWalls()
+    if pos1[0] and pos2[0]:
+        x = pos1[0]
+        for y in range( min(pos1[1],pos2[1])+1, max(pos1[1],pos2[1])):
+            if walls[x][y]:
+                return True
+    elif pos1[1] and pos2[1]:
+        y = pos1[1]
+        for x in range( min(pos1[0],pos2[0])+1, max(pos1[0],pos2[0])):
+            if walls[x][y]:
+                return True
+    return False
 
 def scoreEvaluationFunction(currentGameState):
     """
